@@ -46,6 +46,20 @@ public class LocationEntityService {
         spec.retrieve().toBodilessEntity().block();
     }
 
+    public List<LocationEntity> list() {
+        WebClient.RequestHeadersSpec<?> spec = WebClient.create()
+                .get().uri(URL + "/all");
+        ResponseEntity<List<LocationEntity>> responseEntity = spec.retrieve().toEntityList(LocationEntity.class).block();
+        if (responseEntity == null) {
+            return new ArrayList<>();
+        }
+        List<LocationEntity> locations = responseEntity.getBody();
+        if (locations == null) {
+            return new ArrayList<>();
+        }
+        return locations;
+    }
+
     public Page<LocationEntity> list(Pageable pageable) {
         WebClient.RequestHeadersSpec<?> spec = WebClient.create()
                 .get().uri(URL + "/all");

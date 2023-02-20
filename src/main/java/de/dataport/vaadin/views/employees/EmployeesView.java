@@ -3,6 +3,7 @@ package de.dataport.vaadin.views.employees;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -22,9 +23,13 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.spring.data.VaadinSpringDataHelpers;
 import de.dataport.vaadin.data.entity.EmployeeEntity;
+import de.dataport.vaadin.data.entity.LocationEntity;
 import de.dataport.vaadin.data.service.EmployeeEntityService;
+import de.dataport.vaadin.data.service.LocationEntityService;
 import de.dataport.vaadin.views.MainLayout;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
@@ -41,7 +46,7 @@ public class EmployeesView extends Div implements BeforeEnterObserver {
     private TextField id;
     private TextField surname;
     private TextField name;
-    private TextField locationId;
+    private ComboBox<String> locationId;
 
     private final Button delete = new Button("Delete");
     private final Button cancel = new Button("Cancel");
@@ -51,9 +56,11 @@ public class EmployeesView extends Div implements BeforeEnterObserver {
 
     private EmployeeEntity employeeEntity;
 
+    private final LocationEntityService locationEntityService;
     private final EmployeeEntityService employeeEntityService;
 
-    public EmployeesView(EmployeeEntityService employeeEntityService) {
+    public EmployeesView(LocationEntityService locationEntityService, EmployeeEntityService employeeEntityService) {
+        this.locationEntityService = locationEntityService;
         this.employeeEntityService = employeeEntityService;
         addClassNames("employees-view");
 
@@ -172,7 +179,8 @@ public class EmployeesView extends Div implements BeforeEnterObserver {
         id.setEnabled(false);
         surname = new TextField("Surname");
         name = new TextField("Name");
-        locationId = new TextField("Location Id");
+        locationId = new ComboBox<>("Location Id");
+        locationId.setItems(locationEntityService.list().stream().map(LocationEntity::getLocationId).collect(Collectors.toList()));
         formLayout.add(id, surname, name, locationId);
 
         editorDiv.add(formLayout);
