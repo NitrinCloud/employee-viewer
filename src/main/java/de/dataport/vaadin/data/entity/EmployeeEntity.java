@@ -1,13 +1,34 @@
 package de.dataport.vaadin.data.entity;
 
-import javax.persistence.Entity;
+import javax.persistence.*;
 
 @Entity
-public class EmployeeEntity extends AbstractEntity {
+public class EmployeeEntity {
+
+    @Id
+    private Long id;
 
     private String surname;
     private String name;
     private String locationId;
+
+    public EmployeeEntity(Long id, String surname, String name, String locationId) {
+        this.id = id;
+        this.surname = surname;
+        this.name = name;
+        this.locationId = locationId;
+    }
+
+    public EmployeeEntity() {
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getSurname() {
         return surname;
@@ -27,5 +48,4 @@ public class EmployeeEntity extends AbstractEntity {
     public void setLocationId(String locationId) {
         this.locationId = locationId;
     }
-
 }

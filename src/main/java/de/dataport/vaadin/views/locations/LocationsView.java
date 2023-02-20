@@ -20,15 +20,18 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.data.VaadinSpringDataHelpers;
+import de.dataport.vaadin.data.entity.EmployeeEntity;
 import de.dataport.vaadin.data.entity.LocationEntity;
 import de.dataport.vaadin.data.service.LocationEntityService;
 import de.dataport.vaadin.views.MainLayout;
 import java.util.Optional;
+
+import de.dataport.vaadin.views.employees.EmployeesView;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 @PageTitle("Locations")
-@Route(value = "locations/:locationLocationEntityID?/:action?(edit)", layout = MainLayout.class)
+@Route(value = "locations/:locationEntityID?/:action?(edit)", layout = MainLayout.class)
 public class LocationsView extends Div implements BeforeEnterObserver {
 
     private final String LOCATIONENTITY_ID = "locationEntityID";
@@ -40,6 +43,7 @@ public class LocationsView extends Div implements BeforeEnterObserver {
     private TextField street;
     private TextField city;
 
+    private final Button delete = new Button("Delete");
     private final Button cancel = new Button("Cancel");
     private final Button save = new Button("Save");
 
@@ -60,6 +64,7 @@ public class LocationsView extends Div implements BeforeEnterObserver {
         createEditorLayout(splitLayout);
 
         add(splitLayout);
+        splitLayout.setSplitterPosition(75);
 
         // Configure Grid
         grid.addColumn("locationId").setAutoWidth(true);
@@ -73,7 +78,7 @@ public class LocationsView extends Div implements BeforeEnterObserver {
         // when a row is selected or deselected, populate form
         grid.asSingleSelect().addValueChangeListener(event -> {
             if (event.getValue() != null) {
-                UI.getCurrent().navigate(String.format(LOCATIONENTITY_EDIT_ROUTE_TEMPLATE, event.getValue().getId()));
+                UI.getCurrent().navigate(String.format(LOCATIONENTITY_EDIT_ROUTE_TEMPLATE, event.getValue().getLocationId()));
             } else {
                 clearForm();
                 UI.getCurrent().navigate(LocationsView.class);
@@ -86,6 +91,27 @@ public class LocationsView extends Div implements BeforeEnterObserver {
         // Bind fields. This is where you'd define e.g. validation rules
 
         binder.bindInstanceFields(this);
+
+        delete.addClickListener(e -> {
+            try {
+                if (this.locationEntity == null) {
+                    this.locationEntity = new LocationEntity();
+                }
+                binder.writeBean(this.locationEntity);
+                locationEntityService.delete(this.locationEntity.getLocationId());
+                clearForm();
+                refreshGrid();
+                Notification.show("Data updated");
+                UI.getCurrent().navigate(LocationsView.class);
+            } catch (ObjectOptimisticLockingFailureException exception) {
+                Notification n = Notification.show(
+                        "Error updating the data. Somebody else has updated the record while you were making changes.");
+                n.setPosition(Position.MIDDLE);
+                n.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            } catch (ValidationException validationException) {
+                Notification.show("Failed to update the data. Check again that all values are valid");
+            }
+        });
 
         cancel.addClickListener(e -> {
             clearForm();
@@ -116,7 +142,7 @@ public class LocationsView extends Div implements BeforeEnterObserver {
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        Optional<Long> locationEntityId = event.getRouteParameters().get(LOCATIONENTITY_ID).map(Long::parseLong);
+        Optional<String> locationEntityId = event.getRouteParameters().get(LOCATIONENTITY_ID);
         if (locationEntityId.isPresent()) {
             Optional<LocationEntity> locationEntityFromBackend = locationEntityService.get(locationEntityId.get());
             if (locationEntityFromBackend.isPresent()) {
@@ -156,9 +182,10 @@ public class LocationsView extends Div implements BeforeEnterObserver {
     private void createButtonLayout(Div editorLayoutDiv) {
         HorizontalLayout buttonLayout = new HorizontalLayout();
         buttonLayout.setClassName("button-layout");
+        delete.addThemeVariants(ButtonVariant.LUMO_ERROR);
         cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        buttonLayout.add(save, cancel);
+        buttonLayout.add(save, cancel, delete);
         editorLayoutDiv.add(buttonLayout);
     }
 

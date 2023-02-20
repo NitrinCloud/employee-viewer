@@ -1,10 +1,12 @@
 package de.dataport.vaadin.data.entity;
 
 import javax.persistence.Entity;
+import javax.persistence.Id;
 
 @Entity
-public class LocationEntity extends AbstractEntity {
+public class LocationEntity {
 
+    @Id
     private String locationId;
     private String street;
     private String city;
@@ -27,5 +29,4 @@ public class LocationEntity extends AbstractEntity {
     public void setCity(String city) {
         this.city = city;
     }
-
 }

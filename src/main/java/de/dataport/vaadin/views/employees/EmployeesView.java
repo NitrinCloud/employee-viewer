@@ -29,7 +29,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 @PageTitle("Employees")
-@Route(value = "employees/:employeeEmployeeEntityID?/:action?(edit)", layout = MainLayout.class)
+@Route(value = "employees/:employeeEntityID?/:action?(edit)", layout = MainLayout.class)
 @RouteAlias(value = "", layout = MainLayout.class)
 public class EmployeesView extends Div implements BeforeEnterObserver {
 
@@ -38,10 +38,12 @@ public class EmployeesView extends Div implements BeforeEnterObserver {
 
     private final Grid<EmployeeEntity> grid = new Grid<>(EmployeeEntity.class, false);
 
+    private TextField id;
     private TextField surname;
     private TextField name;
     private TextField locationId;
 
+    private final Button delete = new Button("Delete");
     private final Button cancel = new Button("Cancel");
     private final Button save = new Button("Save");
 
@@ -62,8 +64,10 @@ public class EmployeesView extends Div implements BeforeEnterObserver {
         createEditorLayout(splitLayout);
 
         add(splitLayout);
+        splitLayout.setSplitterPosition(75);
 
         // Configure Grid
+        grid.addColumn("id").setAutoWidth(true);
         grid.addColumn("surname").setAutoWidth(true);
         grid.addColumn("name").setAutoWidth(true);
         grid.addColumn("locationId").setAutoWidth(true);
@@ -86,8 +90,28 @@ public class EmployeesView extends Div implements BeforeEnterObserver {
         binder = new BeanValidationBinder<>(EmployeeEntity.class);
 
         // Bind fields. This is where you'd define e.g. validation rules
-
         binder.bindInstanceFields(this);
+
+        delete.addClickListener(e -> {
+            try {
+                if (this.employeeEntity == null) {
+                    this.employeeEntity = new EmployeeEntity();
+                }
+                binder.writeBean(this.employeeEntity);
+                employeeEntityService.delete(this.employeeEntity.getId());
+                clearForm();
+                refreshGrid();
+                Notification.show("Data updated");
+                UI.getCurrent().navigate(EmployeesView.class);
+            } catch (ObjectOptimisticLockingFailureException exception) {
+                Notification n = Notification.show(
+                        "Error updating the data. Somebody else has updated the record while you were making changes.");
+                n.setPosition(Position.MIDDLE);
+                n.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            } catch (ValidationException validationException) {
+                Notification.show("Failed to update the data. Check again that all values are valid");
+            }
+        });
 
         cancel.addClickListener(e -> {
             clearForm();
@@ -144,10 +168,12 @@ public class EmployeesView extends Div implements BeforeEnterObserver {
         editorLayoutDiv.add(editorDiv);
 
         FormLayout formLayout = new FormLayout();
+        id = new TextField("Id");
+        id.setEnabled(false);
         surname = new TextField("Surname");
         name = new TextField("Name");
         locationId = new TextField("Location Id");
-        formLayout.add(surname, name, locationId);
+        formLayout.add(id, surname, name, locationId);
 
         editorDiv.add(formLayout);
         createButtonLayout(editorLayoutDiv);
@@ -158,9 +184,10 @@ public class EmployeesView extends Div implements BeforeEnterObserver {
     private void createButtonLayout(Div editorLayoutDiv) {
         HorizontalLayout buttonLayout = new HorizontalLayout();
         buttonLayout.setClassName("button-layout");
+        delete.addThemeVariants(ButtonVariant.LUMO_ERROR);
         cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        buttonLayout.add(save, cancel);
+        buttonLayout.add(save, cancel, delete);
         editorLayoutDiv.add(buttonLayout);
     }
 
@@ -183,6 +210,5 @@ public class EmployeesView extends Div implements BeforeEnterObserver {
     private void populateForm(EmployeeEntity value) {
         this.employeeEntity = value;
         binder.readBean(this.employeeEntity);
-
     }
 }
