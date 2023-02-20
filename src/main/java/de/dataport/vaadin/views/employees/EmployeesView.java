@@ -105,6 +105,7 @@ public class EmployeesView extends Div implements BeforeEnterObserver {
                     this.employeeEntity = new EmployeeEntity();
                 }
                 binder.writeBean(this.employeeEntity);
+
                 employeeEntityService.delete(this.employeeEntity.getId());
                 clearForm();
                 refreshGrid();
@@ -131,6 +132,11 @@ public class EmployeesView extends Div implements BeforeEnterObserver {
                     this.employeeEntity = new EmployeeEntity();
                 }
                 binder.writeBean(this.employeeEntity);
+
+                if (this.employeeEntity.getSurname().isBlank() || this.employeeEntity.getName().isBlank() || this.employeeEntity.getLocationId().isBlank()) {
+                    return;
+                }
+
                 employeeEntityService.update(this.employeeEntity);
                 clearForm();
                 refreshGrid();

@@ -124,6 +124,11 @@ public class LocationsView extends Div implements BeforeEnterObserver {
                     this.locationEntity = new LocationEntity();
                 }
                 binder.writeBean(this.locationEntity);
+
+                if (this.locationEntity.getLocationId().isBlank() || this.locationEntity.getStreet().isBlank() || this.locationEntity.getCity().isBlank()) {
+                    return;
+                }
+
                 locationEntityService.update(this.locationEntity);
                 clearForm();
                 refreshGrid();
