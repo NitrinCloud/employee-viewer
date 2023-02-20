@@ -106,6 +106,10 @@ public class EmployeesView extends Div implements BeforeEnterObserver {
                 }
                 binder.writeBean(this.employeeEntity);
 
+                if (this.employeeEntity.getId() == null) {
+                    return;
+                }
+
                 employeeEntityService.delete(this.employeeEntity.getId());
                 clearForm();
                 refreshGrid();
