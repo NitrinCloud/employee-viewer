@@ -115,13 +115,11 @@ public class EmployeesView extends Div implements BeforeEnterObserver {
                 refreshGrid();
                 Notification.show("Data updated");
                 UI.getCurrent().navigate(EmployeesView.class);
-            } catch (ObjectOptimisticLockingFailureException exception) {
+            } catch (Exception exception) {
                 Notification n = Notification.show(
-                        "Error updating the data. Somebody else has updated the record while you were making changes.");
+                        "Error updating the data.");
                 n.setPosition(Position.MIDDLE);
                 n.addThemeVariants(NotificationVariant.LUMO_ERROR);
-            } catch (ValidationException validationException) {
-                Notification.show("Failed to update the data. Check again that all values are valid");
             }
         });
 
@@ -146,13 +144,11 @@ public class EmployeesView extends Div implements BeforeEnterObserver {
                 refreshGrid();
                 Notification.show("Data updated");
                 UI.getCurrent().navigate(EmployeesView.class);
-            } catch (ObjectOptimisticLockingFailureException exception) {
+            } catch (Exception exception) {
                 Notification n = Notification.show(
-                        "Error updating the data. Somebody else has updated the record while you were making changes.");
+                        "Error updating the data.");
                 n.setPosition(Position.MIDDLE);
                 n.addThemeVariants(NotificationVariant.LUMO_ERROR);
-            } catch (ValidationException validationException) {
-                Notification.show("Failed to update the data. Check again that all values are valid");
             }
         });
     }
